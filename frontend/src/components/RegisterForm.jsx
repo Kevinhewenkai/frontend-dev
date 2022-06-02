@@ -23,14 +23,14 @@ function RegisterForm ({ submit }) {
   return (<>
     <TextField id="register-email" label="Email" variant="outlined"
                onChange={handleEmailInputChange} value={email}
-    /><br/><br/>
+    />
     <TextField id="register-password" label="Password" variant="outlined" type="password"
                onChange={handlePasswordInputChange} value={password}
-    /><br/><br/>
+    />
     <TextField id="register-name" label="Name" variant="outlined"
                onChange={handleNameInputChange} value={name}
-    /><br/><br/>
-    <Button variant="contained" onClick={() => submit(email, password, name)}>Register</Button>
+    />
+    <Button variant="contained" fullWidth onClick={() => submit(email, password, name)}>Register</Button>
     </>);
 }
 

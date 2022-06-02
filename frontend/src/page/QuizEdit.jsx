@@ -1,26 +1,43 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import QuestionAdd from './QuestionAdd';
-import apiCall from '../util/ApiCall';
 import QuestionList from '../components/QuestionList';
+import Navbar from '../components/Navbar';
+import axios from 'axios';
 
 function QuizEdit () {
   const navigate = useNavigate();
-  const { cardId } = useParams();
+  const [questions, setQuestions] = React.useState([]);
+  const { quizId } = useParams();
+
   const token = localStorage.getItem('token');
   if (!token) {
     navigate('/login');
   }
-  const headers = {
-    'Content-type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  };
-  const quiz = apiCall(`admin/quiz/${cardId}`, 'GET', headers, {});
+
+  React.useEffect(() => {
+    axios.get(`http://localhost:5005/admin/quiz/${quizId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    }).then(r => {
+      setQuestions(r.data.questions)
+    })
+  }, [])
+
+  const handleAddQuestion = (newQuestion) => {
+    const result = [...questions, newQuestion];
+    setQuestions(result);
+  }
+
+  React.useEffect(() => {
+    handleAddQuestion()
+  }, [])
+
   return (<>
-    <h1>Edit Quiz</h1>
-    <QuestionAdd detail={quiz} token={token}>Add question</QuestionAdd>
-    <h2>Edit Questions</h2>
-    <QuestionList detail={quiz} quizId={cardId}>Question</QuestionList>
+    <Navbar route={'/'} text={'Logout'} title={'Edit a quiz'}>register</Navbar>
+    <QuestionAdd quizId={quizId} token={token}>Add question</QuestionAdd>
+    <QuestionList quizId={quizId}>Question</QuestionList>
   </>)
 }
 

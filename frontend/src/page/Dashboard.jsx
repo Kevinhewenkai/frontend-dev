@@ -3,14 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import apiCall from '../util/ApiCall';
 import QuizCard from '../components/QuizCard';
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import Logout from '../components/Logout';
+import Navbar from '../components/Navbar';
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
 
 function Dashboard () {
   const navigate = useNavigate();
-  const [games, setGames] = React.useState([]);
+  const [quizzes, setQuizzes] = React.useState([]);
+  console.log(quizzes)
 
-  const createQuiz = async () => {
+  const fetchFeeds = async () => {
     const token = localStorage.getItem('token');
     const result = [];
     if (!token) {
@@ -20,10 +22,11 @@ function Dashboard () {
       'Content-type': 'application/json',
       Authorization: `Bearer ${token}`,
     };
-    const quizzes = await apiCall('admin/quiz', 'GET', headers, {});
-    if (quizzes.quizzes) {
-      for (let i = 0; i < quizzes.quizzes.length; i++) {
-        const quiz = quizzes.quizzes[i];
+
+    const quizzesFetched = await apiCall('admin/quiz', 'GET', headers, {});
+    if (quizzesFetched.quizzes) {
+      for (let i = 0; i < quizzesFetched.quizzes.length; i++) {
+        const quiz = quizzesFetched.quizzes[i];
         const res = await apiCall(`admin/quiz/${quiz.id}`, 'GET', headers, {});
         const questions = res.questions;
         let sumTime = 0;
@@ -32,21 +35,28 @@ function Dashboard () {
         }
         result.push({ name: quiz.name, questions: res.questions.length, thumbnail: quiz.thumbnail, id: quiz.id, sumTime: sumTime })
       }
-      // const gameList = quizzes.quizzes.map(async quiz => {
-      //   const res = await apiCall(`admin/quiz/${quiz.id}`, 'GET', headers, {});
-      //   // console.log(res.questions.thumbnail);
-      //   // console.log(quiz.id);
-      //   // console.log(res);
-      //   return { id: quiz.id, title: quiz.name, questionCount: res.questions.length, thumbnail: quiz.thumbnail }
-      // });
-      // console.log(gameList);
-      // console.log(result);
-      setGames(result);
+      setQuizzes(result);
     }
   };
 
-  const GamePart = () => {
-    const parts = games.map((quiz, index) => {
+  const handleDeleteQuiz = async (index) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+    const headers = {
+      'Content-type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    }
+    console.log(quizzes[index])
+    await apiCall(`admin/quiz/${quizzes[index].id}`, 'DELETE', headers, {});
+    const result = [...quizzes];
+    result.splice(index, 1);
+    setQuizzes(result);
+  }
+
+  const Feeds = () => {
+    const parts = quizzes.map((quiz, index) => {
       return (<QuizCard
           gameId={quiz.id}
           gameName={quiz.name}
@@ -56,8 +66,9 @@ function Dashboard () {
           questionCount={quiz.questions}
           title={quiz.title}
           sumTime={quiz.sumTime}
-          setGame={setGames}
+          setGame={setQuizzes}
           active={quiz.active}
+          delete={() => handleDeleteQuiz(index)}
           numQuestion={quiz.questionCount}>
         </QuizCard>)
     });
@@ -65,22 +76,18 @@ function Dashboard () {
       {parts}
     </Grid>)
   }
-  // const buildDashboard = () => {
-  //   const response = createQuiz();
-  // };
-  React.useEffect(() => {
-    createQuiz();
-    // console.log(createQuiz());
+
+  React.useEffect(async () => {
+    await fetchFeeds();
   }, []);
-  // createQuiz().then(body => console.log(body));
+
   return <>
-    <h1>Dashboard</h1>
-    <Logout />
-    <br/>
-    <br/>
-    <Button style={{ position: 'relative', alignItems: 'center' }} variant="contained" color="success" onClick={() => navigate('/quiz/new')}>Add a New quiz</Button>
+    <Navbar route={'/'} text={'logout'} title={'Dashboard'}>register</Navbar>
+    <Fab color="primary" aria-label="add" style={{ position: 'fixed', bottom: '10px', right: '10px' }}>
+      <AddIcon onClick={() => navigate('/quiz/new')}/>
+    </Fab>
     <Grid container alignItems='center' justifyContent='center' spacing={3}>
-      <GamePart/>
+      <Feeds/>
     </Grid>
   </>;
 }

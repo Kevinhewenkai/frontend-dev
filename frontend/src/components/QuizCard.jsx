@@ -7,7 +7,7 @@ import apiCall from '../util/ApiCall';
 import Popup from './Popup';
 
 const QuizCard = (prop) => {
-  const [status, setStatus] = React.useState('start');
+  // const [status, setStatus] = React.useState('start');
   const [startOpen, setStartOpen] = React.useState(false);
   const [endOpen, setEndOpen] = React.useState(false);
   const [sessionId, setSessionId] = React.useState(0);
@@ -18,27 +18,22 @@ const QuizCard = (prop) => {
   const index = prop.index;
   const questionsCount = prop.questionCount;
   const sumTime = prop.sumTime;
-  const active = prop.active;
 
-  React.useEffect(() => {
-    if (active !== null) {
-      setSessionId(active);
-    } else {
-      setSessionId(0);
-    }
-  }, [active])
+  console.log(sessionId)
 
-  const deleteQuiz = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    }
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    };
-    apiCall(`admin/quiz/${gameId}`, 'DELETE', headers, {}).then();
+  const token = localStorage.getItem('token');
+  if (!token) {
+    navigate('/login');
   }
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+
+  React.useEffect(async () => {
+    const res = await apiCall(`admin/quiz/${gameId}`, 'GET', headers, {})
+    setSessionId(res.active === null ? 0 : res.active);
+  }, [startOpen])
 
   const handleStartClose = () => {
     setStartOpen(false);
@@ -46,29 +41,17 @@ const QuizCard = (prop) => {
 
   const handleEndClose = () => {
     setEndOpen(false);
-    setSessionId(0);
   }
-  const toggleGameState = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    }
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    };
-    if (status === 'start') {
-      setStatus('stop');
-      setStartOpen(true);
-      await apiCall(`admin/quiz/${gameId}/start`, 'POST', headers, {}).then();
-      const res = await apiCall(`admin/quiz/${gameId}`, 'GET', headers, {})
-      setSessionId(res.active);
-    } else {
-      setStatus('start');
-      setEndOpen(true);
-      apiCall(`admin/quiz/${gameId}/end`, 'POST', headers, {}).then();
-    }
-  }
+  // const toggleGameState = async () => {
+  //   if (status === 'start') {
+  //     setStatus('stop');
+  //     setStartOpen(true);
+  //     await apiCall(`admin/quiz/${gameId}/start`, 'POST', headers, {}).then();
+  //     const res = await apiCall(`admin/quiz/${gameId}`, 'GET', headers, {})
+  //     setSessionId(res.active);
+  //   } else {
+  //   }
+  // }
 
   return (
     <div style={{ border: 'solid 1px', margin: '5px', padding: '10px 40px' }}>
@@ -81,15 +64,24 @@ const QuizCard = (prop) => {
       <Button variant="contained" component="span" onClick={() => navigate(`/quiz/edit/${gameId}`)}>
         update
       </Button>
-      <Button variant="outlined" startIcon={<DeleteIcon />} onClick={deleteQuiz}>
+      <Button variant="outlined" startIcon={<DeleteIcon />} onClick={prop.delete}>
         Delete
       </Button>
     </Stack>
       <br/>
     <Stack direction="row" spacing={2}>
-      <Button variant="contained" color="secondary" onClick={() => toggleGameState()}>
-        { sessionId ? 'End' : 'Start' }
-      </Button>
+      {
+        sessionId === 0
+          ? <Button variant="contained" color="secondary" onClick={async () => {
+            setStartOpen(true);
+            await apiCall(`admin/quiz/${gameId}/start`, 'POST', headers, {});
+          }}>Start</Button>
+          : <Button variant={'outlined'} color={'warning'} onClick={async () => {
+            setSessionId(0);
+            setEndOpen(true);
+            await apiCall(`admin/quiz/${gameId}/end`, 'POST', headers, {});
+          }}>Stop</Button>
+      }
     </Stack>
     <Popup open={startOpen} onclose={handleStartClose} use={'start'} quizId={gameId} sessionId={sessionId}>start</Popup>
     <Popup open={endOpen} onclose={handleEndClose} use={'end'} quizId={gameId} sessionId={sessionId}>end</Popup>

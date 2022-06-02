@@ -2,6 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Navbar from '../components/Navbar';
+import Stack from '@mui/material/Stack';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Fab from '@mui/material/Fab';
 
 function QuizNew () {
   const navigate = useNavigate();
@@ -37,13 +41,18 @@ function QuizNew () {
   };
 
   return <>
-    <h1>QuizNew</h1>
-    <TextField id="join-session-id" label="Quiz Name" variant="outlined"
-               onChange={handleName} value={name}
-    /><br/><br/>
-    <Button variant="contained" color="success" onClick={createQuiz}>Create</Button>
-    <Button variant="contained" color="secondary" onClick={() => navigate('/dashboard')}>Cancel</Button>
-    <br/>
+    <Navbar route={'/'} text={'logout'} title={'Create A Quiz'}>register</Navbar>
+    <div className={'form'}>
+      <Stack direction={'column'} spacing={1}>
+        <TextField id="join-session-id" label="Quiz Name" variant="outlined"
+                   onChange={handleName} value={name}
+        />
+        <Button variant="contained" color="success" onClick={createQuiz}>Create</Button>
+      </Stack>
+    </div>
+    <Fab color="primary" aria-label="add" style={{ position: 'fixed', bottom: '10px', right: '10px' }}>
+      <ArrowBackIcon onClick={() => navigate('/dashboard')}/>
+    </Fab>
   </>;
 }
 

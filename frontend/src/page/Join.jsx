@@ -1,12 +1,13 @@
 import React from 'react';
 import JoinForm from '../components/JoinForm';
 import { useParams } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
 function Join () {
   const { sessionId } = useParams();
   console.log(sessionId);
   return (<>
-    <h1>Join the session</h1>
+    <Navbar route={''} text={''} title={'Join'}>register</Navbar>
     <JoinForm sessionId={sessionId}/>
   </>)
 }

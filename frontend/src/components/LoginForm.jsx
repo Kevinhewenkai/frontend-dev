@@ -18,11 +18,11 @@ function LoginForm ({ submit }) {
   return (<>
     <TextField id="login-email" label="Email" variant="outlined"
                onChange={handleEmailInputChange} value={email}
-    /><br/><br/>
+    />
     <TextField id="login-password" label="Password" variant="outlined" type="password"
                onChange={handlePasswordInputChange} value={password}
-    /><br/><br/>
-    <Button variant="contained" onClick={() => submit(email, password)}>Login</Button>
+    />
+    <Button variant="contained" fullWidth onClick={() => submit(email, password)}>Login</Button>
   </>);
 }
 
